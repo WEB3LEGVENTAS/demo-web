@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De Creadora a Empresaria Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Enlazar CSS Floating WhatsApp (Solicitado) -->
+    <link rel="stylesheet" href="https://rawcdn.githack.com/jerfeson/floating-whatsapp/0310b4cd88e9e55dc637d1466670da26b645ae49/floating-wpp.min.css">
+    
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        
+        /* Smooth Slider Transition */
+        #slider {
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            position: relative;
+            z-index: 10; /* Asegura que el contenido esté sobre las partículas */
+        }
+
+        /* Canvas de Partículas */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Detrás del contenido, sobre el fondo */
+            pointer-events: none; /* Permite clicks a través del canvas */
+        }
+
+        /* Estilos Modernos Botón Telegram (Usuario) */
+        .telegram-float-button {
+            position: fixed; /* Fijo en la pantalla */
+            bottom: 210px; /* Ajustado para estar encima de WhatsApp */
+            right: 32px; /* Alineado con el botón de WhatsApp */
+            z-index: 1000; /* Por encima de otros elementos */
+            background-color: #0088cc; /* Color de Telegram */
+            color: white;
+            border-radius: 50%; /* Redondo */
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            text-decoration: none;
+        }
+        .telegram-float-button:hover {
+            transform: scale(1.1); /* Efecto al pasar el ratón */
+            background-color: #0077B5;
+        }
+        .telegram-float-button i {
+            font-size: 28px;
+            position: relative; /* Asegura que el icono quede encima del pulso */
+            z-index: 2;
+        }
+        /* Para hacerlo responsive */
+        @media (max-width: 768px) {
+            .telegram-float-button {
+                width: 50px;
+                height: 50px;
+                bottom: 180px; /* Ajuste móvil */
+                right: 15px;
+            }
+            .telegram-float-button i {
+                font-size: 24px;
+            }
+        }
+
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #f472b6 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Glassmorphism Cards */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-panel-light {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Animations */
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-500 { animation-delay: 0.5s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Custom Scrollbar for Phone Mockup */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Background Gradient Animation */
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #111827);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Custom Pulse Animation */
+        .pulse-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #25d366; /* Default WhatsApp Green */
+            border-radius: 50%;
+            z-index: -1;
+            animation: pulse-animation 2s infinite;
+        }
+
+        /* Clase específica para el pulso de Telegram */
+        .pulse-ring.telegram {
+            background: #0088cc; /* Telegram Blue */
+        }
+
+        @keyframes pulse-animation {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="text-white h-screen w-screen overflow-hidden relative animated-bg">
+
+    <!-- CANVAS DE FONDO (PARTÍCULAS) -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Top Navigation / Progress Indicator -->
+    <div class="absolute top-0 left-0 w-full p-6 z-50 flex justify-between items-center">
+        <div class="text-xs font-bold tracking-widest text-gray-400 uppercase">Propuesta Estratégica</div>
+        <div class="flex gap-2">
+            <!-- Progress Dots generated by JS -->
+            <div id="progress-dots" class="flex gap-2"></div>
+        </div>
+    </div>
+
+    <!-- BOTÓN FLOTANTE GLOBAL TELEGRAM (Modernizado + Pulso) -->
+    <a href="https://t.me/+50259789810" target="_blank" class="telegram-float-button">
+        <div class="pulse-ring telegram"></div> <!-- Efecto de pulso añadido -->
+        <i class="fab fa-telegram-plane"></i> <!-- Icono de Telegram -->
+    </a>
+
+    <!-- BOTÓN FLOTANTE GLOBAL WHATSAPP (Existente) -->
+    <a href="https://wa.me/50259789810" target="_blank" class="fixed bottom-32 right-8 z-[100] group">
+        <div class="relative w-16 h-16 bg-[#25d366] rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300">
+            <div class="pulse-ring"></div>
+            <i class="fab fa-whatsapp text-white text-3xl relative z-10"></i>
+            <!-- Tooltip -->
+            <div class="absolute right-full mr-4 bg-white text-gray-900 px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl pointer-events-none">
+                Contáctame Ahora
+                <div class="absolute top-1/2 -right-1 w-2 h-2 bg-white transform -translate-y-1/2 rotate-45"></div>
+            </div>
+        </div>
+    </a>
+
+    <!-- Main Slider Container -->
+    <div id="slider" class="h-full w-full flex">
+
+        <!-- Slide 1: El Ecosistema -->
+        <div class="slide min-w-full h-full flex flex-col items-center justify-center p-8 relative">
+            <div class="absolute inset-0 z-0 opacity-20">
+                <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+            </div>
+
+            <div class="z-10 w-full flex flex-col items-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in-up">
+                    <i class="fas fa-map"></i> El Mapa del Tesoro
+                </div>
+
+                <h2 class="text-4xl md:text-5xl font-bold mb-16 text-center animate-fade-in-up delay-100">El Ecosistema <span class="gradient-text">Perfecto</span></h2>
+                
+                <div class="flex flex-col md:flex-row items-center justify-center gap-6 relative max-w-7xl w-full animate-fade-in-up delay-200">
+                    
+                    <!-- Step 1 -->
+                    <div class="relative group w-full md:w-1/4">
+                        <div class="glass-panel p-8 rounded-2xl text-center border-t-4 border-yellow-500 hover:-translate-y-2 transition-transform duration-300">
+                            <div class="w-16 h-16 mx-auto bg-yellow-500/20 rounded-full flex items-center justify-center text-3xl mb-4 text-yellow-500"><i class="fab fa-instagram"></i></div>
+                            <h3 class="text-lg font-bold mb-1">Redes Sociales</h3>
+                            <p class="text-xs font-bold text-yellow-500 tracking-wider mb-2">TRÁFICO FRÍO</p>
+                            <p class="text-gray-400 text-xs leading-relaxed">Instagram, Twitter y TikTok para atraer nuevas miradas y curiosos.</p>
+                        </div>
+                        <div class="hidden md:block absolute top-1/2 -right-6 transform -translate-y-1/2 text-gray-600 text-2xl z-20"><i class="fas fa-angle-right"></i></div>
+                    </div>
+
+                    <!-- Step 2 (Main) -->
+                    <div class="relative group w-full md:w-1/3 z-10">
+                        <div class="glass-panel p-10 rounded-2xl text-center border-t-4 border-pink-500 transform scale-105 shadow-2xl shadow-pink-500/10 bg-gray-800/80 hover:-translate-y-2 transition-transform duration-300">
+                            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-pink-600 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider shadow-lg">El Corazón del Negocio</div>
+                            <div class="w-20 h-20 mx-auto bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-4xl mb-4 text-white shadow-lg"><i class="fas fa-globe"></i></div>
+                            <h3 class="text-2xl font-bold mb-1 text-white">TU WEB</h3>
+                            <p class="text-xs font-bold text-pink-400 tracking-wider mb-3">VENTA & SEGURIDAD</p>
+                            <p class="text-gray-300 text-sm leading-relaxed">Aquí capturas el <strong>EMAIL</strong>, vendes suscripciones caras y aseguras al cliente. Es tu banco.</p>
+                        </div>
+                        <div class="hidden md:block absolute top-1/2 -right-6 transform -translate-y-1/2 text-gray-600 text-2xl z-20"><i class="fas fa-angle-right"></i></div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="relative group w-full md:w-1/4">
+                        <div class="glass-panel p-8 rounded-2xl text-center border-t-4 border-blue-500 hover:-translate-y-2 transition-transform duration-300">
+                            <div class="w-16 h-16 mx-auto bg-blue-500/20 rounded-full flex items-center justify-center text-3xl mb-4 text-blue-500"><i class="fab fa-telegram-plane"></i></div>
+                            <h3 class="text-lg font-bold mb-1">Telegram</h3>
+                            <p class="text-xs font-bold text-blue-500 tracking-wider mb-2">COMUNIDAD VIP</p>
+                            <p class="text-gray-400 text-xs leading-relaxed">Solo para notificar: "Chicos, nuevo video en la web". Los mandas de vuelta a tu casa.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-16 glass-panel-light px-8 py-4 rounded-full text-center max-w-3xl mx-auto border border-white/10 animate-fade-in-up delay-300">
+                    <p class="text-lg text-gray-300">"Tus redes sociales es tu <strong>megáfono</strong>, pero la Web es tu <strong>banco</strong>."</p>
+                </div>
+                
+                <div class="mt-10 animate-fade-in-up delay-500">
+                     <button onclick="nextSlide()" class="text-gray-400 hover:text-white transition-colors text-sm uppercase tracking-widest flex flex-col items-center">
+                        Descubre cómo lograrlo
+                        <i class="fas fa-chevron-down mt-2 animate-bounce"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Portada Impactante -->
+        <div class="slide min-w-full h-full flex flex-col items-center justify-center p-8 relative overflow-hidden">
+            <div class="absolute inset-0 z-0 opacity-30">
+                <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-pink-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+                <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+            </div>
+
+            <div class="relative z-10 max-w-5xl text-center">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel-light text-pink-300 text-xs font-bold tracking-wider mb-8 animate-fade-in-up border-pink-500/30">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> ESTRATEGIA 2025
+                </div>
+                
+                <h1 class="text-6xl md:text-8xl font-extrabold mb-6 leading-tight tracking-tight animate-fade-in-up delay-100">
+                    De Creadora a <br>
+                    <span class="gradient-text">Empresaria Digital</span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto font-light animate-fade-in-up delay-200">
+                    Cómo blindar tus ingresos, asegurar tu audiencia y multiplicar tu alcance más allá de Telegram.
+                </p>
+                
+                <button onclick="nextSlide()" class="group relative px-8 py-4 bg-white text-gray-900 font-bold rounded-full overflow-hidden transition-all hover:scale-105 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] animate-fade-in-up delay-300">
+                    <span class="relative z-10 flex items-center">
+                        Comenzar Análisis <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 3: Validación -->
+        <div class="slide min-w-full h-full flex flex-col md:flex-row items-center justify-center p-8 md:p-20 relative">
+            <div class="w-full md:w-1/2 mb-10 md:mb-0 md:pr-16 z-10 animate-slide-content">
+                <div class="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 text-3xl mb-6 glass-panel border-blue-500/30">
+                    <i class="fab fa-telegram-plane"></i>
+                </div>
+                <h2 class="text-5xl font-bold mb-6">Telegram es el Rey... <span class="text-gray-500">por ahora.</span></h2>
+                <p class="text-lg text-gray-300 mb-8 leading-relaxed font-light">
+                    Lo estás haciendo increíble. Telegram ofrece inmediatez y una comunidad fiel. <strong class="text-white">Funciona perfecto para el dinero rápido.</strong>
+                </p>
+                
+                <div class="space-y-4">
+                    <div class="glass-panel p-4 rounded-xl flex items-center gap-4 hover:bg-white/5 transition-colors cursor-default">
+                        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400"><i class="fas fa-check"></i></div>
+                        <div>
+                            <h4 class="font-bold">Tasa de Apertura 98%</h4>
+                            <p class="text-xs text-gray-400">Casi todos ven lo que publicas.</p>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl flex items-center gap-4 hover:bg-white/5 transition-colors cursor-default">
+                        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400"><i class="fas fa-bolt"></i></div>
+                        <div>
+                            <h4 class="font-bold">Cero Fricción</h4>
+                            <p class="text-xs text-gray-400">Venta directa en el chat.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full md:w-1/2 flex justify-center z-10">
+                <div class="relative w-80 floating">
+                    <div class="glass-panel p-4 rounded-2xl mb-4 flex items-center gap-3 animate-fade-in-up delay-200 border-l-4 border-l-blue-500 bg-gray-900/90">
+                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"><i class="fab fa-telegram text-white"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-400">AHORA MISMO</div>
+                            <div class="text-sm font-bold">Nuevo contenido disponible 🔥</div>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-3xl w-full aspect-[9/16] relative overflow-hidden border border-white/10 shadow-2xl bg-gray-900">
+                        <div class="flex items-center gap-3 mb-6 border-b border-gray-700 pb-4">
+                            <div class="w-10 h-10 bg-gradient-to-tr from-pink-500 to-purple-500 rounded-full"></div>
+                            <div>
+                                <div class="h-2 w-24 bg-gray-600 rounded mb-2"></div>
+                                <div class="h-2 w-16 bg-gray-700 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-gray-800 p-3 rounded-tr-xl rounded-bl-xl rounded-br-xl w-4/5 text-xs text-gray-300">Hola chicos! Nuevo video subido 🔥</div>
+                            <div class="w-full h-32 bg-gray-800 rounded-xl flex items-center justify-center relative overflow-hidden group cursor-pointer">
+                                <div class="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                                    <div class="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center"><i class="fas fa-play text-white"></i></div>
+                                </div>
+                            </div>
+                            <div class="bg-blue-600/20 p-3 rounded-xl border border-blue-500/30 text-center">
+                                <span class="text-xs text-blue-300 font-bold">DESBLOQUEAR (50 pts)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: El Problema (Riesgo) -->
+        <div class="slide min-w-full h-full flex flex-col items-center justify-center p-8 relative">
+            <div class="max-w-4xl w-full text-center mb-12 animate-slide-content">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-bold uppercase tracking-wider mb-6">
+                    <i class="fas fa-exclamation-circle"></i> Análisis de Riesgo
+                </div>
+                <h2 class="text-5xl md:text-6xl font-bold mb-4">El Síndrome del <br>"Inquilino Digital"</h2>
+                <p class="text-xl text-gray-400 max-w-2xl mx-auto">Construir tu negocio 100% en Telegram es construir tu mansión en terreno prestado.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full px-4">
+                <div class="glass-panel p-8 rounded-2xl hover:bg-red-500/5 transition-all duration-300 group cursor-pointer animate-fade-in-up delay-100 border-t-4 border-t-transparent hover:border-t-red-500">
+                    <div class="w-14 h-14 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Riesgo de Desahucio</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">Si Telegram cambia sus políticas o cierra tu canal por denuncias, <strong class="text-white">tu negocio desaparece en 1 segundo.</strong></p>
+                </div>
+                <div class="glass-panel p-8 rounded-2xl hover:bg-red-500/5 transition-all duration-300 group cursor-pointer animate-fade-in-up delay-200 border-t-4 border-t-transparent hover:border-t-red-500">
+                    <div class="w-14 h-14 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-users-slash"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Sin Datos, Sin Poder</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">No tienes los emails de tus fans. Si la app cae, no tienes forma de contactarlos para decirles dónde estás.</p>
+                </div>
+                <div class="glass-panel p-8 rounded-2xl hover:bg-red-500/5 transition-all duration-300 group cursor-pointer animate-fade-in-up delay-300 border-t-4 border-t-transparent hover:border-t-red-500">
+                    <div class="w-14 h-14 bg-gray-500/10 rounded-full flex items-center justify-center text-gray-400 text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fab fa-google"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Eres Invisible</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">Google no indexa Telegram. Miles de personas buscan tu nombre y solo encuentran contenido pirata, no a ti.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: La Solución (Web Propia + Demo WhatsApp) -->
+        <div class="slide min-w-full h-full flex flex-col md:flex-row items-center justify-center p-8 md:p-20 bg-gray-900/50">
+            <div class="w-full md:w-1/2 order-2 md:order-1 flex justify-center items-center relative">
+                <div class="absolute inset-0 bg-gradient-to-tr from-pink-500/20 to-purple-500/20 filter blur-[100px] rounded-full"></div>
+                
+                <!-- The Phone -->
+                <div class="relative w-[300px] h-[600px] bg-gray-900 rounded-[3rem] border-8 border-gray-800 shadow-2xl overflow-hidden z-10 floating">
+                    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-7 bg-black rounded-b-2xl z-30"></div>
+                    
+                    <div class="w-full h-full bg-gray-900 overflow-y-auto scrollbar-hide relative">
+                        <!-- Header Image -->
+                        <div class="h-64 bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1516726817505-f5ed825624d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900"></div>
+                            <div class="absolute bottom-4 left-6">
+                                <h2 class="text-2xl font-bold text-white">Tu Marca</h2>
+                                <p class="text-xs text-pink-400 font-semibold">@usuariooficial</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="p-6 pt-2 space-y-4">
+                            <div class="flex gap-2 mb-4">
+                                <div class="flex-1 bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm">
+                                    <div class="text-lg font-bold">150k</div>
+                                    <div class="text-[10px] text-gray-400">Fans</div>
+                                </div>
+                                <div class="flex-1 bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm">
+                                    <div class="text-lg font-bold">500+</div>
+                                    <div class="text-[10px] text-gray-400">Videos</div>
+                                </div>
+                            </div>
+                            
+                            <button class="w-full py-4 bg-gradient-to-r from-pink-600 to-purple-600 rounded-xl text-sm font-bold shadow-lg shadow-pink-500/20 hover:scale-[1.02] transition-transform">
+                                <i class="fas fa-crown mr-2"></i> ÚNETE AL CLUB VIP
+                            </button>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-gray-800 rounded-xl p-3 h-32 relative overflow-hidden group">
+                                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80')] bg-cover bg-center opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                                    <span class="relative z-10 text-xs font-bold text-white bg-black/50 px-2 py-1 rounded">Exclusive</span>
+                                </div>
+                                <div class="bg-gray-800 rounded-xl p-3 h-32 relative overflow-hidden group">
+                                     <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80')] bg-cover bg-center opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                                     <span class="relative z-10 text-xs font-bold text-white bg-black/50 px-2 py-1 rounded">Packs</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BOTÓN FLOTANTE DEMOSTRATIVO DENTRO DEL CELULAR -->
+                        <div class="absolute bottom-4 right-4 z-50">
+                             <div class="w-12 h-12 bg-[#25d366] rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                                <i class="fab fa-whatsapp text-white text-2xl"></i>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full md:w-1/2 order-1 md:order-2 mb-10 md:mb-0 md:pl-12 z-10 animate-slide-content">
+                <h2 class="text-5xl font-bold mb-6">Tu Web es tu <br><span class="gradient-text">Póliza de Seguro</span></h2>
+                <p class="text-xl text-gray-300 mb-8 font-light">No es un gasto, es comprar tu propia casa digital y dejar de pagar alquiler.</p>
+                
+                <div class="space-y-6">
+                    <div class="flex items-start group">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center text-pink-400 text-xl mt-1 border border-pink-500/30 group-hover:bg-pink-500 group-hover:text-white transition-all">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="ml-5">
+                            <h3 class="text-xl font-bold text-white mb-1">Propiedad Indestructible</h3>
+                            <p class="text-sm text-gray-400">Nadie te puede cerrar tu web. Tus reglas, tu contenido, para siempre.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start group">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 text-xl mt-1 border border-purple-500/30 group-hover:bg-purple-500 group-hover:text-white transition-all">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="ml-5">
+                            <h3 class="text-xl font-bold text-white mb-1">Imagen Premium</h3>
+                            <p class="text-sm text-gray-400">Te diferencias instantáneamente del 99% de chicas que solo usan Linktree.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start group">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center text-green-400 text-xl mt-1 border border-green-500/30 group-hover:bg-green-500 group-hover:text-white transition-all">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="ml-5">
+                            <h3 class="text-xl font-bold text-white mb-1">Ingresos Pasivos 24/7</h3>
+                            <p class="text-sm text-gray-400">Tienda automática. Vende contenido antiguo mientras duermes sin responder DMs.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Cierre -->
+        <div class="slide min-w-full h-full flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
+             <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-pink-900/20"></div>
+             
+            <div class="z-10 max-w-4xl animate-fade-in-up">
+                <h2 class="text-5xl md:text-7xl font-bold mb-8 leading-tight">Tu <span class="gradient-text">Boutique Digital</span> <br>Llave en Mano</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left mb-12">
+                    <div class="glass-panel p-6 rounded-xl flex items-center gap-4 border border-white/5 hover:border-pink-500/50 transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-check"></i></div>
+                        <span class="text-lg font-medium">Diseño Exclusivo y Sexy</span>
+                    </div>
+                    <div class="glass-panel p-6 rounded-xl flex items-center gap-4 border border-white/5 hover:border-pink-500/50 transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-check"></i></div>
+                        <span class="text-lg font-medium">Tienda 100% Automática</span>
+                    </div>
+                    <div class="glass-panel p-6 rounded-xl flex items-center gap-4 border border-white/5 hover:border-pink-500/50 transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-check"></i></div>
+                        <span class="text-lg font-medium">Protección Anti-Bloqueos</span>
+                    </div>
+                    <div class="glass-panel p-6 rounded-xl flex items-center gap-4 border border-white/5 hover:border-pink-500/50 transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-check"></i></div>
+                        <span class="text-lg font-medium">Centralización de Redes</span>
+                    </div>
+                </div>
+                
+                <p class="text-xl text-gray-400 mb-10">Deja de preocuparte por los baneos y empieza a construir tu imperio hoy.</p>
+                
+                <!-- Se agregó target="_blank" para forzar la apertura en entornos restringidos -->
+                <a href="mailto:info@web3leg.com" target="_blank" rel="noopener noreferrer" class="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-bold text-white transition-all duration-200 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-600 hover:scale-105 shadow-lg shadow-pink-500/30">
+                    <span class="mr-3">Agendar Inicio del Proyecto</span>
+                    <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Controls -->
+    <div class="absolute bottom-8 right-8 flex gap-4 z-50">
+        <button onclick="prevSlide()" class="w-14 h-14 rounded-full glass-panel flex items-center justify-center hover:bg-white hover:text-gray-900 transition-all focus:outline-none group">
+            <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+        </button>
+        <button onclick="nextSlide()" class="w-14 h-14 rounded-full bg-white text-gray-900 flex items-center justify-center hover:bg-gray-200 transition-all focus:outline-none shadow-lg group">
+            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slider = document.getElementById('slider');
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const progressDotsContainer = document.getElementById('progress-dots');
+
+        // Create Progress Dots
+        for(let i=0; i<totalSlides; i++) {
+            let dot = document.createElement('div');
+            dot.className = `h-1 rounded-full transition-all duration-300 ${i === 0 ? 'w-8 bg-pink-500' : 'w-4 bg-gray-700'}`;
+            progressDotsContainer.appendChild(dot);
+        }
+
+        const dots = progressDotsContainer.children;
+
+        function updateSlide() {
+            slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+            
+            // Update Dots
+            for(let i=0; i<totalSlides; i++) {
+                if(i === currentSlide) {
+                    dots[i].className = 'h-1 rounded-full transition-all duration-300 w-8 bg-pink-500';
+                } else {
+                    dots[i].className = 'h-1 rounded-full transition-all duration-300 w-4 bg-gray-700';
+                }
+            }
+            
+            // Trigger Animation Replay for content
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.animate-fade-in-up');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight; /* trigger reflow */
+                el.style.animation = null; 
+            });
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight') {
+                nextSlide();
+            } else if (event.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        /* --- PARTICLE SYSTEM LOGIC --- */
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray;
+        let mouse = {
+            x: null,
+            y: null,
+            radius: 150
+        }
+
+        window.addEventListener('mousemove', function(event) {
+            mouse.x = event.x;
+            mouse.y = event.y;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 5 + 1; // Base size
+                this.baseSize = this.size; // Store initial size to avoid cumulative errors
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.density = (Math.random() * 30) + 1;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                
+                // Colors: Pink, Purple, White, Gold
+                const colors = [
+                    'rgba(236, 72, 153, 0.4)', // Pink-500
+                    'rgba(139, 92, 246, 0.4)', // Purple-500
+                    'rgba(255, 255, 255, 0.6)', // White
+                    'rgba(251, 191, 36, 0.3)'   // Gold-300
+                ];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.isBlinking = Math.random() > 0.8; // 20% particles blink
+                this.blinkSpeed = Math.random() * 0.05;
+                this.alpha = Math.random();
+                this.alphaDirection = 1;
+            }
+
+            draw() {
+                // Ensure size is valid before drawing
+                if (this.size > 0) {
+                    ctx.fillStyle = this.color;
+                    
+                    // Create soft glowing circle (Bokeh effect)
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+
+            update() {
+                // Movement
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Mouse interaction (gentle push)
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx*dx + dy*dy);
+                let forceDirectionX = dx / distance;
+                let forceDirectionY = dy / distance;
+                let maxDistance = mouse.radius;
+                let force = (maxDistance - distance) / maxDistance;
+                let directionX = forceDirectionX * force * this.density;
+                let directionY = forceDirectionY * force * this.density;
+
+                if (distance < mouse.radius) {
+                    this.x -= directionX;
+                    this.y -= directionY;
+                } else {
+                    // Return to base slightly but mostly float
+                    if (this.x !== this.baseX) {
+                        let dx = this.x - this.baseX;
+                        this.x -= dx/50; // Very slow return
+                    }
+                     if (this.y !== this.baseY) {
+                        let dy = this.y - this.baseY;
+                        this.y -= dy/50;
+                    }
+                }
+
+                // Wrap around screen
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+
+                // Blinking effect for "magic dust" feel
+                if (this.isBlinking) {
+                    // Oscillate around baseSize instead of accumulating
+                    this.size = this.baseSize + Math.sin(Date.now() * this.blinkSpeed) * (this.baseSize * 0.3);
+                }
+
+                // Safety clamp to prevent negative radius error
+                if (this.size < 0.1) this.size = 0.1;
+
+                this.draw();
+            }
+        }
+
+        function init() {
+            particlesArray = [];
+            // Create fewer particles for elegance, not clutter
+            let numberOfParticles = (canvas.height * canvas.width) / 9000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+            // Connect close particles with thin lines for constellation effect (optional, disabling for cleaner look)
+             // connect(); 
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', function() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+
+    </script>
+</body>
+</html>
